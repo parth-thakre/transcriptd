@@ -1,0 +1,38 @@
+{
+  "name": "transcriptd",
+  "productName": "transcriptd",
+  "version": "0.1.4",
+  "description": "Self-hosted push-to-talk dictation and meeting transcription",
+  "license": "MIT",
+  "main": "./out/main/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dist": "bun run build && bun run stage:agent && electron-builder",
+    "dist:linux": "bun run build && bun run stage:agent linux && electron-builder --linux",
+    "dist:win": "bun run build && bun run stage:agent win && electron-builder --win",
+    "icons": "bun scripts/generate-icons.mjs",
+    "test": "bun test tests/backend.test.ts tests/settings.test.ts src/renderer/annotations.test.ts",
+    "smoke": "bun tests/smoke.ts",
+    "stage:agent": "bun scripts/stage-agent.mjs"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0",
+    "electron-vite": "^4.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0"
+  },
+  "homepage": "https://github.com/parth-thakre/transcriptd"
+}

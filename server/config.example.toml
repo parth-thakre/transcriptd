@@ -1,0 +1,147 @@
+# Copy to server/config.toml. All values below are examples of the built-in defaults.
+# Set TRANSCRIPTD_CONFIG to use a different file. Host, port, token, data_dir and
+# models_dir can also be overridden with TRANSCRIPTD_HOST, TRANSCRIPTD_PORT,
+# TRANSCRIPTD_TOKEN, TRANSCRIPTD_DATA_DIR and TRANSCRIPTD_MODELS_DIR.
+
+host = "127.0.0.1"               # Listen address: this machine only (or behind a local TLS proxy).
+#   To reach it from other devices, opt in explicitly: host = "<this machine's Tailscale IP>"
+#   (tailnet only) or host = "0.0.0.0" (every interface). The API is plain HTTP with a bearer
+#   token: expose it only on a trusted network, a tailnet, or behind TLS.
+port = 7411                       # HTTP and WebSocket port.
+# token = "replace-with-a-secret" # Omit to create data/token (mode 0600); print with `uv run transcriptd token`.
+data_dir = "data"                # SQLite, generated token, history and saved audio.
+models_dir = "models"            # GGUF download cache.
+tailnet_auth = false             # true: your own Tailscale devices (same login as this machine) need no token.
+tailnet_users = []               # Extra Tailscale logins allowed that way. Use with host = your Tailscale IP.
+allowed_hosts = []               # Host names a tailnet-identity request may use besides IPs, localhost and *.ts.net
+                                 #   (e.g. a MagicDNS short name "box"). Others get 403: guards against DNS rebinding.
+trust_proxy_headers = false      # true: take the client address from X-Forwarded-For when the connection comes from
+                                 #   uvicorn's FORWARDED_ALLOW_IPS (default 127.0.0.1). WARNING: with tailnet_auth the
+                                 #   caller's tailnet identity then comes from that header; only behind a proxy that sets it.
+default_profile = "english"      # Name of a [profiles.NAME] table below.
+keep_dictation_audio = false     # true: keep every take as data/dictations/<id>.wav (never pruned; for telemetry and `bench`). Meetings are kept separately.
+max_upload_mb = 25               # Largest request body: /v1/transcribe uploads and JSON (413 past it).
+max_meeting_upload_mb = 500      # Largest meeting recording for POST /v1/meetings/{id}/audio.
+max_queued_meetings = 8          # Meeting final passes waiting or running at once (429 past it).
+max_dictation_seconds = 600      # Longest take: /v1/dictate WebSocket and /v1/transcribe uploads (413 past it).
+
+[profiles.english]
+engine = "ggml"                 # ggml | hf | openai_compat | chat_audio | ensemble
+model = "handy-computer/parakeet-tdt-0.6b-v2-gguf" # Local .gguf path or HF repo ID for ggml.
+language = "en"                 # Omit for model language auto-detection.
+languages = ["en"]              # Intended languages shown to clients.
+backend = "auto"                # auto | cpu | vulkan | rocm | cuda (ggml).
+quant = "F16"                   # Filename variant when downloading GGUF.
+whisper_prompt_bias = false      # Prompt Whisper with vocab terms (may seed hallucinations).
+pnc = "default"                 # Model punctuation/casing control where supported.
+itn = "default"                 # Inverse text normalization where supported.
+# partials_model = "handy-computer/...-gguf" # Optional ggml model for live partials.
+# base_url = "https://example.com/v1" # For engine = "openai_compat" only.
+# api_key = "..."                # For openai_compat transcription only.
+
+[profiles.multilingual]
+engine = "ggml"
+model = "handy-computer/whisper-large-v3-turbo-gguf"
+languages = ["en", "hi", "mr"]
+quant = "Q8_0"
+# Each profile accepts all the keys documented under [profiles.english].
+# For an hf profile, set engine = "hf" and model to the upstream HF repo ID.
+
+[cleanup]
+# Optional LLM formatting pass (needs [llm]). It may restyle and, with `cuts`, delete false
+# starts, repeats, self-corrections ("at 7, actually 3", "set up is... no, I don't want you to
+# set up"), thinking aloud ("what am I saying"), verbal tics (like, you know) and asides
+# (a whole clause off the point, with no request, commitment or name in it), and make lists, write
+# "dont wanna" as "don't want to", fix "it get" -> "it gets" and "5 30" -> "5:30". The guard reverts any word it adds or changes and any drop it can't verify as one of those;
+# negations, time words, conditions and numbers are never cut. A list needs two or more items
+# and an intro that isn't half a sentence ("Thinking from:"), or it goes back to sentences.
+# `llm_instructions` are your own rules in plain language.
+llm = false
+cuts = true                       # ramble cleanup; false = punctuation, case and um/uh only
+# llm_long_words = 40             # takes this long go to [llm_long] if it's set
+# llm_long_timeout_s = 10.0       # wait this long (per 150 words) for [llm_long]; [llm] runs alongside and stands in
+# chat_apps = ["instagram", "whatsapp", "telegram", "signal", "securesms", "messenger", "facebook.orca",
+#              "discord", "snapchat", "messaging", "twitter"]  # app ids/names (substrings): no lists in Auto
+# llm_model = "gemma4"          # override [llm].model for this pass
+llm_timeout_s = 8.0
+llm_instructions = ""
+remove_fillers = true             # Delete recognized isolated fillers.
+collapse_stutters = true          # Collapse repeated stutter tokens; guard still checks edits.
+capitalize_first = true           # Capitalize the first word.
+ensure_terminal_punctuation = false # Append terminal punctuation if missing.
+extra_protected = []              # More words the guard must never delete/replace.
+
+# Post-cleanup styles a client picks per dictation (the phone app's Auto/Message/Note/Email/Ramble).
+# Deterministic, applied after the LLM pass (or on the speech model's own punctuation when it's
+# off); the guard checks every result.
+# layout: "none" | "note" (spoken lists become bullets, paragraphs at "Also, ...")
+#         | "email" (greeting and sign-off on their own lines, short paragraphs).
+# lists: may the LLM make lists (true/false); unset = yes, except in chat_apps. Message: false.
+# rewrite: true = Ramble: the LLM (needs [cleanup] llm) rewrites the take into what you meant, in
+#   your voice, dropping repeats, retractions and tangents you abandon; ramble.py checks it for
+#   invented or flipped facts and falls back to the guarded cleanup if it fails. Ramble: true.
+# Defining any [cleanup.styles.*] table replaces the built-in five.
+# [cleanup.styles.note]
+# label = "Note"
+# layout = "note"
+# terminal_punctuation = true
+
+[vocab]
+phonetic_threshold = 0.86         # Minimum phonetic similarity for a suggestion.
+max_conf_for_replacement = 0.85   # Only replace words with confidence at or below this.
+prompt_terms_max = 60             # Maximum vocabulary terms in an engine prompt.
+
+[llm]
+# base_url = "http://localhost:8080/v1" # OpenAI-compatible summary endpoint.
+# api_key = "..."               # Endpoint key, if required.
+# model = "your-model"           # Summary model; no summaries without configuration.
+# api_key_file = "~/.config/transcriptd/llm.key"  # instead of api_key: read at each call
+
+# A bigger model for long rambles (cleanup.llm_long_words and up), where a small one drops
+# facts. [llm] is used if it fails or times out. Leave unset to use [llm] for everything.
+# Any OpenAI-compatible chat endpoint works (llama-server, vLLM, a hosted API).
+# [llm_long]
+# base_url = "http://127.0.0.1:8000/v1"
+# api_key_file = "~/.config/transcriptd/llm-long.key"
+# model = "your-larger-model"
+# reasoning_effort = "low"        # sent as-is to models that think first; omit for others
+
+# Alternative English profile: Whisper large-v3 (full). More forgiving of whispered or
+# unusual phonation than Parakeet; slower (~350 ms per 10 s on an RX 9070 XT), no
+# per-word confidence, and it can hallucinate fluent text on unclear audio.
+# [profiles.english-whisper]
+# engine = "ggml"
+# model = "handy-computer/whisper-large-v3-gguf"
+# quant = "Q8_0"
+# language = "en"
+# languages = ["en"]
+# partials_model = "handy-computer/nemotron-3.5-asr-streaming-0.6b-gguf"
+
+# Qwen3-ASR 1.7B: the best single model on Indian-English phone takes in our tests
+# (fewer errors than Whisper on short takes, ~90 ms median on an RX 9070 XT). No word times
+# or confidence. Say the quant: the repo also has BF16/F16 files.
+# [profiles.english-qwen3]
+# engine = "ggml"
+# model = "handy-computer/Qwen3-ASR-1.7B-gguf"
+# quant = "Q8_0"
+# language = "en"                # "en", not auto: auto wrote an English list of Indian names in Devanagari
+# languages = ["en"]
+
+# ROVER ensemble: the members transcribe each take and vote word by word (asr/ensemble.py).
+# Measured on Indian-English phone takes: 17 -> 8 errors in 615 words vs the best member alone,
+# and 45 -> 42 / 81 -> 75 vs Whisper on Svarah phone audio. Costs the members' run times added
+# up (~390 ms median, 2 s for 55 s on an RX 9070 XT) and ~6 GB of VRAM for all three.
+# members: names of local (ggml/hf) profiles above; the first is the pivot and wins ties.
+# [profiles.english-ensemble]
+# engine = "ensemble"
+# members = ["english-qwen3", "english", "english-whisper"]
+# language = "en"                # passed to every member
+# languages = ["en"]
+
+# Audio-capable chat model as a speech profile (e.g. Gemma 4 E4B on llama-server with --mmproj).
+# [profiles.gemma4]
+# engine = "chat_audio"
+# model = "gemma4"
+# base_url = "http://127.0.0.1:7412/v1"
+# language = "en"
+# languages = ["en", "hi"]

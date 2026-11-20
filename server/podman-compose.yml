@@ -1,0 +1,49 @@
+services:
+  cpu:
+    build:
+      context: .
+      dockerfile: Containerfile.cpu
+    ports:
+      - "127.0.0.1:7411:7411"
+    volumes:
+      - ./data:/data:Z
+      - ./models:/models:Z
+      # - ./config.toml:/app/config.toml:ro,Z
+    restart: unless-stopped
+
+  # To use ROCm, comment out cpu above and uncomment this service.
+  # rocm:
+  #   build:
+  #     context: .
+  #     dockerfile: Containerfile.rocm
+  #     args:
+  #       GPU_TARGETS: gfx1201
+  #   devices:
+  #     - /dev/kfd:/dev/kfd
+  #     - /dev/dri:/dev/dri
+  #   ports:
+  #     - "127.0.0.1:7411:7411"
+  #   volumes:
+  #     - ./data:/data:Z
+  #     - ./models:/models:Z
+  #     - ./config.toml:/app/config.toml:ro,Z
+  #   restart: unless-stopped
+
+  # To use CUDA, comment out cpu above and uncomment this service.
+  # cuda:
+  #   build:
+  #     context: .
+  #     dockerfile: Containerfile.cuda
+  #   # Requires NVIDIA Container Toolkit configured for Podman.
+  #   runtime: nvidia
+  #   device_requests:
+  #     - driver: nvidia
+  #       count: all
+  #       capabilities: [gpu]
+  #   ports:
+  #     - "127.0.0.1:7411:7411"
+  #   volumes:
+  #     - ./data:/data:Z
+  #     - ./models:/models:Z
+  #     - ./config.toml:/app/config.toml:ro,Z
+  #   restart: unless-stopped

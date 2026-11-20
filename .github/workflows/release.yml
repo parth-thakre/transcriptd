@@ -1,0 +1,106 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  agent-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+        working-directory: agent
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transcriptd-agent-linux
+          path: agent/target/release/transcriptd-agent
+          if-no-files-found: error
+
+  agent-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+        working-directory: agent
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transcriptd-agent-windows
+          path: agent/target/release/transcriptd-agent.exe
+          if-no-files-found: error
+
+  client-linux:
+    needs: agent-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+        working-directory: client
+      - run: bun run build
+        working-directory: client
+      - uses: actions/download-artifact@v4
+        with:
+          name: transcriptd-agent-linux
+          path: client/bin
+      - run: chmod +x bin/transcriptd-agent
+        working-directory: client
+      - run: sudo apt-get update && sudo apt-get install -y rpm
+      - run: bunx electron-builder --linux AppImage deb rpm --publish never
+        working-directory: client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transcriptd-client-linux
+          path: |
+            client/dist/*.AppImage
+            client/dist/*.deb
+            client/dist/*.rpm
+          if-no-files-found: error
+
+  client-windows:
+    needs: agent-windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+        working-directory: client
+      - run: bun run build
+        working-directory: client
+      - uses: actions/download-artifact@v4
+        with:
+          name: transcriptd-agent-windows
+          path: client/bin
+      - run: bunx electron-builder --win nsis portable --publish never
+        working-directory: client
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transcriptd-client-windows
+          path: client/dist/*.exe
+          if-no-files-found: error
+
+  publish:
+    needs: [agent-linux, agent-windows, client-linux, client-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: transcriptd-*
+          path: release-assets
+          merge-multiple: false
+      - name: Publish unsigned builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --notes 'Unsigned builds. Windows SmartScreen may warn.'
+          find release-assets -type f -print0 | xargs -0 gh release upload "$TAG" --clobber

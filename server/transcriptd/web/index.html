@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#000000">
+  <meta name="color-scheme" content="dark">
+  <title>transcriptd</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <!-- Home: one big hold-to-talk button. Laid out for the Flip cover screen first. -->
+  <section id="home" class="view" data-rec="idle">
+    <header class="bar">
+      <button id="profileBtn" class="chip" aria-label="Speech model">
+        <span class="dot" id="statusDot"></span><span id="profileName">…</span>
+      </button>
+      <span id="timer" class="timer" aria-live="off"></span>
+      <button id="historyBtn" class="icon" aria-label="History" data-icon="history"></button>
+    </header>
+    <main class="stage">
+      <div id="live" class="live" aria-live="polite"></div>
+      <div class="mic-row">
+        <button id="cancelBtn" class="icon ghost cancel" aria-label="Discard recording" data-icon="close"></button>
+        <button id="mic" class="mic" aria-label="Hold to talk, or tap for hands-free">
+          <span class="halo" id="halo"></span>
+          <span class="glyph" data-icon="mic"></span>
+        </button>
+        <span class="cancel-spacer"></span>
+      </div>
+      <p id="hint" class="hint">Hold to talk · tap for hands-free</p>
+    </main>
+    <footer class="home-foot">
+      <nav id="styleBar" class="styles" role="radiogroup" aria-label="Cleanup style"></nav>
+      <button id="styleChip" class="chip style-chip" aria-label="Cleanup style"><span id="styleChipLabel">Auto</span><span data-icon="chevron"></span></button>
+    </footer>
+  </section>
+
+  <!-- Result: cleaned text, already copied. Tap a word to fix it. -->
+  <section id="result" class="view" hidden>
+    <header class="bar">
+      <button class="icon" data-back aria-label="Back" data-icon="back"></button>
+      <span id="resultMeta" class="meta"></span>
+      <button id="deleteBtn" class="icon" aria-label="Delete" data-icon="trash"></button>
+    </header>
+    <div id="textWrap" class="text-wrap">
+      <div id="text" class="text"></div>
+    </div>
+    <footer class="actions">
+      <button id="styleBtn" class="chip style-chip" aria-label="Cleanup style"><span id="styleLabel">Auto</span><span data-icon="chevron"></span></button>
+      <span class="grow"></span>
+      <button id="shareBtn" class="icon round" aria-label="Share" data-icon="share"></button>
+      <button id="copyBtn" class="icon round primary" aria-label="Copy" data-icon="copy"></button>
+      <button id="resultMic" class="icon round mic-small" aria-label="New dictation" data-icon="mic"></button>
+    </footer>
+  </section>
+
+  <section id="history" class="view" hidden>
+    <header class="bar">
+      <button class="icon" data-back aria-label="Back" data-icon="back"></button>
+      <span class="title">History</span>
+      <button id="settingsBtn" class="icon" aria-label="Settings" data-icon="gear"></button>
+    </header>
+    <ol id="historyList" class="list"></ol>
+  </section>
+
+  <section id="settings" class="view" hidden>
+    <header class="bar">
+      <button class="icon" data-back aria-label="Back" data-icon="back"></button>
+      <span class="title">Settings</span>
+      <span class="icon-spacer"></span>
+    </header>
+    <div class="form">
+      <div id="serverInfo" class="server-info"></div>
+      <label class="row"><span>LLM polish</span><input type="checkbox" id="optLlm" class="switch"></label>
+      <label class="row"><span>Copy automatically</span><input type="checkbox" id="optCopy" class="switch"></label>
+      <label class="row"><span>Vibrate</span><input type="checkbox" id="optHaptics" class="switch"></label>
+      <button id="installBtn" class="wide" hidden>Install app</button>
+      <button id="unpairBtn" class="wide danger">Unpair this phone</button>
+    </div>
+  </section>
+
+  <section id="pair" class="view" hidden>
+    <div class="pair">
+      <img src="icon-192.png" alt="" width="56" height="56">
+      <h1>Pair with your PC</h1>
+      <p>On the PC, run <code>transcriptd mobile</code> in <code>server/</code> and open the link it prints. Or paste the token:</p>
+      <form id="pairForm">
+        <input id="tokenInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="token">
+        <button class="wide primary" type="submit">Pair</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="sheet" class="sheet" hidden>
+    <div class="sheet-backdrop" data-close></div>
+    <div class="sheet-body" id="sheetBody" role="dialog" aria-modal="true"></div>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

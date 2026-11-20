@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="service_label">transcriptd dictation bubble</string>
+    <string name="service_description">Shows a dictation bubble when you are typing in a text field, and types what you said at the cursor. It reads text only from the focused text field, and hides in password fields. Everything goes to your own transcriptd server, nowhere else. With each dictation it sends up to 400 characters before the cursor and 100 after, to fit spacing and capitals and to spell names already in the field, plus a report for troubleshooting (phone model, screen, microphone, timings, and which app you were typing in or which apps were on screen; never any text). If you turn on Learn from my edits, it keeps reading that field until you are done with the dictation, then sends at most 4,000 characters of the field around the dictation (all of it, if the field is that short), so the server learns your fixes. Nothing is sent if the dictation can no longer be found in the field.</string>
+</resources>

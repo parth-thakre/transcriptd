@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Transcriptd" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/bg</item>
+        <item name="android:colorAccent">@color/mint</item>
+        <item name="android:textColorPrimary">@color/ink</item>
+        <item name="android:textColorSecondary">@color/muted</item>
+    </style>
+    <color name="bg">#1B1815</color>
+    <color name="surface">#15181C</color>
+    <color name="rule">#2A2F35</color>
+    <color name="ink">#F2EEE8</color>
+    <color name="muted">#9B9389</color>
+    <color name="brand">#194239</color>
+    <color name="mint">#FFD24A</color>
+    <color name="ok">#4FCC9E</color>
+    <color name="rec">#FF6358</color>
+    <color name="warn">#EFB04C</color>
+</resources>

@@ -1,0 +1,23 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+server/data/
+server/models/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+# rust
+agent/target/
+# node
+node_modules/
+client/out/
+client/dist/
+client/release/
+# misc
+.env
+*.log
+.DS_Store
+# local config and its backups (config.toml.bak-*); the template stays tracked
+server/config.toml*
+!server/config.example.toml

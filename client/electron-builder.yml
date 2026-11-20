@@ -1,0 +1,34 @@
+appId: io.transcriptd.desktop
+productName: transcriptd
+asar: true
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - out/**/*
+  - package.json
+  - resources/tray.png
+linux:
+  maintainer: transcriptd contributors
+  category: Utility
+  icon: resources/icon.png
+  target:
+    - AppImage
+    - rpm
+    - deb
+  extraResources:
+    - from: bin/transcriptd-agent
+      to: bin/transcriptd-agent
+    - from: ../packaging/70-transcriptd.rules
+      to: packaging/70-transcriptd.rules
+win:
+  target:
+    - nsis
+    - portable
+  icon: resources/icon.png
+  extraResources:
+    - from: bin/transcriptd-agent.exe
+      to: bin/transcriptd-agent.exe
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

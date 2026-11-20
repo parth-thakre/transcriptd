@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain HTTP is allowed here because the server is usually reached over Tailscale at its
+     100.x address (WireGuard already encrypts it) or on the LAN. A network security config can
+     only name domains, not IP ranges, so the real limit is in the app: ServerUrl.kt refuses
+     http:// to anything but loopback, private (RFC 1918), link-local and Tailscale (100.64.0.0/10)
+     IP addresses, and asks for https:// everywhere else, MagicDNS (*.ts.net) names included. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

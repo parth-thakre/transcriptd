@@ -1,0 +1,23 @@
+FROM rocm/dev-ubuntu-24.04:7.1
+COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /usr/local/bin/
+ARG GPU_TARGETS=gfx1201
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 python3.12-venv git cmake build-essential pkg-config ca-certificates libgomp1 libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md ./
+COPY transcriptd ./transcriptd
+COPY scripts ./scripts
+RUN uv sync --locked --no-dev --no-editable --python /usr/bin/python3.12 \
+    && bash scripts/build-transcribe-cpp.sh hip "${GPU_TARGETS}" \
+    && install -m 755 .native/transcribe.cpp/build/src/libtranscribe.so /usr/local/lib/libtranscribe.so
+ENV PATH="/app/.venv/bin:${PATH}" \
+    TRANSCRIBE_LIBRARY=/usr/local/lib/libtranscribe.so \
+    TRANSCRIPTD_DATA_DIR=/data \
+    TRANSCRIPTD_MODELS_DIR=/models \
+    TRANSCRIPTD_HOST=0.0.0.0
+RUN mkdir -p /data /models
+VOLUME ["/data", "/models"]
+EXPOSE 7411
+CMD ["transcriptd", "serve"]

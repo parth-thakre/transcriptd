@@ -1,0 +1,11 @@
+# transcriptd-agent: let the logged-in user read keyboards (global push-to-talk) and
+# write the uinput device (text injection) without joining the `input` group.
+# Install:  sudo cp packaging/70-transcriptd.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+# The file name sorts before 73-seat-late.rules so the uaccess tag is applied, and after
+# 60-input-id.rules, which sets ID_INPUT_KEYBOARD.
+#
+# Security: any program running as the logged-in user can then read every keystroke from
+# these keyboards and type into any window via uinput. See SECURITY.md before installing.
+# Mice, touchpads, joysticks and other input devices are not opened up.
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+SUBSYSTEM=="input", KERNEL=="event*", ENV{ID_INPUT_KEYBOARD}=="1", TAG+="uaccess"
