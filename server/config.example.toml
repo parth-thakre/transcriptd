@@ -62,7 +62,7 @@ cuts = true                       # ramble cleanup; false = punctuation, case an
 # llm_long_timeout_s = 10.0       # wait this long (per 150 words) for [llm_long]; [llm] runs alongside and stands in
 # chat_apps = ["instagram", "whatsapp", "telegram", "signal", "securesms", "messenger", "facebook.orca",
 #              "discord", "snapchat", "messaging", "twitter"]  # app ids/names (substrings): no lists in Auto
-# llm_model = "gemma4"          # override [llm].model for this pass
+# llm_model = "small-model"     # override [llm].model for this pass
 llm_timeout_s = 8.0
 llm_instructions = ""
 remove_fillers = true             # Delete recognized isolated fillers.
@@ -138,10 +138,11 @@ prompt_terms_max = 60             # Maximum vocabulary terms in an engine prompt
 # language = "en"                # passed to every member
 # languages = ["en"]
 
-# Audio-capable chat model as a speech profile (e.g. Gemma 4 E4B on llama-server with --mmproj).
-# [profiles.gemma4]
+# Audio-capable chat model as a speech profile (any OpenAI-compatible /v1/chat/completions
+# that accepts `input_audio` content parts).
+# [profiles.chat-audio]
 # engine = "chat_audio"
-# model = "gemma4"
-# base_url = "http://127.0.0.1:7412/v1"
+# model = "your-audio-model"
+# base_url = "http://127.0.0.1:8000/v1"
 # language = "en"
 # languages = ["en", "hi"]
