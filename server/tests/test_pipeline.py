@@ -230,7 +230,7 @@ def test_chat_audio_engine_sends_base64_wav_and_spreads_words():
         seen["parts"] = body["messages"][0]["content"]
         return httpx.Response(200, json={"choices": [{"message": {"content": "\"never merge this\""}}]})
 
-    e = ChatAudioEngine("http://fake/v1", "", "gemma4")
+    e = ChatAudioEngine("http://fake/v1", "", "audio-chat")
     e._client = httpx.Client(transport=httpx.MockTransport(handler))
     t = e.transcribe(TranscribeRequest(pcm=np.zeros(16000 * 3, dtype=np.float32), language="en"))
     assert [w.text for w in t.words] == ["never", "merge", "this"]

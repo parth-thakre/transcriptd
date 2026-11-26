@@ -1,5 +1,5 @@
-"""Audio-capable chat models as an ASR engine (Gemma 4 E4B via llama-server, or any
-OpenAI-compatible /v1/chat/completions that accepts `input_audio` content parts).
+"""Audio-capable chat models as an ASR engine: any OpenAI-compatible
+/v1/chat/completions that accepts `input_audio` content parts.
 
 No word timestamps or confidences: words are spread evenly over the clip and the
 transcript is marked unscored. Clips longer than `window_s` are split.
